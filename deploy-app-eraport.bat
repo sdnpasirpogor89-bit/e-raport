@@ -4,10 +4,10 @@ echo DEPLOY TO PRODUCTION
 echo ========================================
 echo.
 cd "D:\Aplikasi Develop\E-Raport SD Ver 1.0"
-echo [1/3] Adding changes...
+echo [1/4] Adding changes...
 git add .
 echo.
-echo [2/3] Committing...
+echo [2/4] Committing...
 set commit_msg=update: %date% %time%
 git commit -m "%commit_msg%"
 if errorlevel 1 (
@@ -17,7 +17,7 @@ if errorlevel 1 (
     exit /b
 )
 echo.
-echo [3/3] Pushing to main...
+echo [3/4] Pushing to main...
 git push origin main
 if errorlevel 1 (
     echo.
@@ -26,8 +26,11 @@ if errorlevel 1 (
     exit /b
 )
 echo.
+echo [4/4] Deploying to Vercel...
+vercel --prod
+echo.
 echo ========================================
-echo DONE! Vercel auto-deploying...
-echo Check: https://administrasi-sdn-pasirpogor.vercel.app
+echo DONE! Check your app:
+echo https://administrasi-sdn-pasirpogor.vercel.app
 echo ========================================
 pause
