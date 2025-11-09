@@ -31,6 +31,6 @@ vercel --prod
 echo.
 echo ========================================
 echo DONE! Check your app:
-echo https://administrasi-sdn-pasirpogor.vercel.app
+echo https://e-raport-sdn1-pasirpogor.vercel.app
 echo ========================================
 pause
