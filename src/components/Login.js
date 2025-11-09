@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Eye, EyeOff, ChevronDown } from "lucide-react";
 import { supabase } from "../supabaseClient";
 import Logo from "./Logo";
-import backgroundImage from "../assets/Background.JPG";
+import backgroundImage from "../assets/background.jpg";
 
 export const Login = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState("");
