@@ -1,0 +1,11 @@
+id,school_id,username,password_hash,name,nip,role,phone,is_active,created_at,updated_at
+05306746-8c45-4d93-a2bd-58e709eabc78,efe23973-c473-4535-a6d8-77ecb1ee53a8,yayanhaedar,admin123,Yayan Haedar,196512121990031001,admin,,true,2025-11-07 01:27:00.611232+00,2025-11-07 01:27:00.611232+00
+3022d77f-b762-4a99-ae64-8960e0a278b4,efe23973-c473-4535-a6d8-77ecb1ee53a8,didinsuhud,kelas6,Didin Suhud,,wali_kelas,,true,2025-11-07 01:27:00.611232+00,2025-11-07 01:27:00.611232+00
+349abc0e-513f-4b1b-864c-23ae59bef3c3,efe23973-c473-4535-a6d8-77ecb1ee53a8,acengmudrikah,pabp,Aceng Mudrikah,,guru,,true,2025-11-07 01:27:00.611232+00,2025-11-07 01:27:00.611232+00
+4b7d70bb-1346-45f7-a0be-01fb38f892e8,efe23973-c473-4535-a6d8-77ecb1ee53a8,admin,kepsek,Admin Sekolah,,admin,,true,2025-11-07 01:27:00.611232+00,2025-11-07 01:27:00.611232+00
+7a25b25d-722c-46b2-8720-a43d0bc415af,efe23973-c473-4535-a6d8-77ecb1ee53a8,widiamuhardini,kelas2,Widia Muhardini,,wali_kelas,,true,2025-11-07 01:27:00.611232+00,2025-11-07 01:27:00.611232+00
+81184cf1-92f4-46ee-9679-26b51dc0cb02,efe23973-c473-4535-a6d8-77ecb1ee53a8,syifayuliani,kelas3,Syifa Yuliani,,wali_kelas,,true,2025-11-07 01:27:00.611232+00,2025-11-07 01:27:00.611232+00
+a47ae7f9-d3c0-4fa1-8845-4e31db547320,efe23973-c473-4535-a6d8-77ecb1ee53a8,dianamelia,kelas4,Diana Melia,,wali_kelas,,true,2025-11-07 01:27:00.611232+00,2025-11-07 01:27:00.611232+00
+a62661b3-7da9-42da-af59-2909158649bd,efe23973-c473-4535-a6d8-77ecb1ee53a8,yosefedi,pjok,Yosef Edi,,guru,,true,2025-11-07 01:27:00.611232+00,2025-11-07 01:27:00.611232+00
+edc9b22b-bcfc-4755-bcd0-1ee5a08cb1dc,efe23973-c473-4535-a6d8-77ecb1ee53a8,litapurnama,kelas5,Lita Purnama,,wali_kelas,,true,2025-11-07 01:27:00.611232+00,2025-11-07 01:27:00.611232+00
+fe83760a-dfa1-4acd-82a3-4a73b4bc739d,efe23973-c473-4535-a6d8-77ecb1ee53a8,adesulastri,kelas1,Ade Sulastri,,wali_kelas,,true,2025-11-07 01:27:00.611232+00,2025-11-07 01:27:00.611232+00

@@ -1,0 +1,530 @@
+# 📚 Dokumentasi Database E-Rapor SD
+
+## 🎯 Overview
+Aplikasi E-Rapor SD adalah sistem manajemen rapor untuk Sekolah Dasar yang menggunakan Kurikulum Merdeka dengan sistem penilaian berbasis Tujuan Pembelajaran (TP).
+
+---
+
+## 🏗️ Struktur Database
+
+### 1️⃣ **MASTER DATA**
+
+#### **Table: schools**
+Data sekolah yang menggunakan aplikasi.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary Key |
+| name | string | Nama sekolah (misal: SDN 01 Margahayu) |
+| npsn | string | Nomor Pokok Sekolah Nasional |
+| address | text | Alamat lengkap sekolah |
+| principal_name | string | Nama Kepala Sekolah |
+| principal_nip | string | NIP Kepala Sekolah |
+| phone | string | Nomor telepon sekolah |
+| email | string | Email sekolah |
+| logo_url | string | URL logo sekolah (opsional) |
+| created_at | timestamp | Waktu data dibuat |
+
+**Notes:**
+- Satu database bisa untuk banyak sekolah (multi-tenant ready)
+- Setiap data lainnya harus punya `school_id` untuk isolasi data
+
+---
+
+#### **Table: academic_years**
+Tahun ajaran aktif di sekolah.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary Key |
+| school_id | uuid | Foreign Key ke schools |
+| name | string | Nama tahun ajaran (misal: 2024/2025) |
+| start_date | date | Tanggal mulai tahun ajaran |
+| end_date | date | Tanggal akhir tahun ajaran |
+| is_active | boolean | Apakah tahun ajaran ini aktif? |
+| created_at | timestamp | Waktu data dibuat |
+
+**Notes:**
+- Hanya 1 tahun ajaran yang bisa aktif di satu waktu
+- Semua data pembelajaran terikat ke tahun ajaran
+
+---
+
+#### **Table: users**
+Data semua pengguna aplikasi (Admin, Guru, Wali Kelas).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary Key |
+| school_id | uuid | Foreign Key ke schools |
+| email | string | Email untuk login (unique) |
+| password_hash | string | Password terenkripsi |
+| name | string | Nama lengkap |
+| nip | string | NIP (Nomor Induk Pegawai) |
+| role | enum | 'admin', 'guru', 'wali_kelas' |
+| phone | string | Nomor telepon |
+| is_active | boolean | Status aktif/nonaktif |
+| created_at | timestamp | Waktu data dibuat |
+
+**Roles:**
+- **admin**: Full access, manage semua data
+- **guru**: Input nilai mapel yang diampu
+- **wali_kelas**: Input nilai + ekskul + kehadiran + cetak rapor
+
+**Notes:**
+- Satu guru bisa jadi wali kelas sekaligus guru mapel
+- Email harus unique di seluruh sistem
+
+---
+
+#### **Table: classes**
+Data kelas/rombongan belajar.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary Key |
+| school_id | uuid | Foreign Key ke schools |
+| academic_year_id | uuid | Foreign Key ke academic_years |
+| name | string | Nama kelas (misal: 1A, 2B, 3C) |
+| grade | integer | Tingkat kelas (1-6) |
+| fase | string | 'A' (kelas 1-2), 'B' (kelas 3-4), 'C' (kelas 5-6) |
+| wali_kelas_id | uuid | Foreign Key ke users (wali kelas) |
+| capacity | integer | Kapasitas siswa maksimal |
+| created_at | timestamp | Waktu data dibuat |
+
+**Fase Kurikulum Merdeka SD:**
+- Fase A: Kelas 1-2
+- Fase B: Kelas 3-4
+- Fase C: Kelas 5-6
+
+---
+
+#### **Table: students**
+Data siswa.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary Key |
+| school_id | uuid | Foreign Key ke schools |
+| class_id | uuid | Foreign Key ke classes |
+| nisn | string | NISN (Nomor Induk Siswa Nasional) - Unique |
+| nis | string | NIS (Nomor Induk Sekolah) |
+| name | string | Nama lengkap siswa |
+| gender | enum | 'L' atau 'P' |
+| birth_place | string | Tempat lahir |
+| birth_date | date | Tanggal lahir |
+| address | text | Alamat lengkap |
+| parent_name | string | Nama orang tua/wali |
+| parent_phone | string | Nomor telepon orang tua |
+| is_active | boolean | Status aktif/nonaktif |
+| created_at | timestamp | Waktu data dibuat |
+
+**Notes:**
+- Siswa naik kelas = pindah `class_id` ke kelas baru
+- NISN harus unique
+
+---
+
+#### **Table: subjects**
+Master data mata pelajaran.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary Key |
+| school_id | uuid | Foreign Key ke schools |
+| code | string | Kode mapel (misal: PAI, PJOK, MTK) |
+| name | string | Nama mata pelajaran |
+| category | enum | 'intrakurikuler', 'muatan_lokal' |
+| sort_order | integer | Urutan tampilan di rapor |
+| created_at | timestamp | Waktu data dibuat |
+
+**Contoh Mapel SD:**
+1. Pendidikan Agama dan Budi Pekerti (PABP)
+2. Pendidikan Pancasila (PPKn)
+3. Bahasa Indonesia
+4. Matematika
+5. Ilmu Pengetahuan Alam (IPA)
+6. Ilmu Pengetahuan Sosial (IPS)
+7. Seni Budaya dan Prakarya (SBdP)
+8. Pendidikan Jasmani Olahraga dan Kesehatan (PJOK)
+9. Bahasa Inggris (mulai kelas 3)
+10. Muatan Lokal (Bahasa Daerah, dll)
+
+**Notes:**
+- Mapel bisa berbeda per sekolah
+- `sort_order` untuk urutan di rapor
+
+---
+
+### 2️⃣ **PEMBELAJARAN & PENILAIAN**
+
+#### **Table: teacher_subjects**
+Relasi: Guru mengajar mapel apa di kelas mana.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary Key |
+| teacher_id | uuid | Foreign Key ke users |
+| subject_id | uuid | Foreign Key ke subjects |
+| class_id | uuid | Foreign Key ke classes |
+| academic_year_id | uuid | Foreign Key ke academic_years |
+| created_at | timestamp | Waktu data dibuat |
+
+**Contoh Data:**
+- Guru A mengajar Matematika di Kelas 5A tahun 2024/2025
+- Guru B (PJOK) mengajar PJOK di Kelas 1A, 1B, 2A, 2B, 3A, dst
+
+**Notes:**
+- Satu guru bisa mengajar banyak mapel di banyak kelas
+- Guru kelas biasanya mengajar 5-7 mapel di 1 kelas
+- Guru mapel (PJOK, PABP) mengajar 1 mapel di semua kelas
+
+---
+
+#### **Table: learning_objectives**
+Tujuan Pembelajaran (TP) per mata pelajaran.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary Key |
+| subject_id | uuid | Foreign Key ke subjects |
+| grade | integer | Tingkat kelas (1-6) |
+| fase | string | 'A', 'B', atau 'C' |
+| semester | integer | 1 atau 2 |
+| code | string | Kode TP (misal: TP.1, TP.2) |
+| description | text | Deskripsi lengkap TP |
+| sort_order | integer | Urutan TP |
+| created_at | timestamp | Waktu data dibuat |
+
+**Contoh TP Matematika Kelas 5 Semester 1:**
+- TP.1: Memahami dan menyelesaikan masalah bilangan berpangkat dan bentuk akar
+- TP.2: Menentukan dan menyelesaikan masalah yang berkaitan dengan teorema pythagoras
+- TP.3: Menyelesaikan masalah yang berkaitan dengan operasi hitung bilangan bulat
+
+**Notes:**
+- TP dibuat per mapel, grade, dan semester
+- Guru bisa import TP dari Excel
+- TP bisa digunakan oleh semua sekolah (template)
+
+---
+
+#### **Table: student_scores**
+Nilai siswa per mata pelajaran per semester.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary Key |
+| student_id | uuid | Foreign Key ke students |
+| teacher_subject_id | uuid | Foreign Key ke teacher_subjects |
+| academic_year_id | uuid | Foreign Key ke academic_years |
+| semester | integer | 1 atau 2 |
+| final_score | decimal(5,2) | Nilai akhir (0-100) |
+| description | text | Deskripsi capaian kompetensi (auto-generated) |
+| created_at | timestamp | Waktu data dibuat |
+| updated_at | timestamp | Waktu data diupdate |
+
+**Notes:**
+- Hanya 1 nilai per siswa per mapel per semester
+- Deskripsi di-generate otomatis dari TP yang dicapai/tidak dicapai
+
+---
+
+#### **Table: student_tp_achievements**
+Checklist TP yang tercapai oleh siswa.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary Key |
+| student_score_id | uuid | Foreign Key ke student_scores |
+| learning_objective_id | uuid | Foreign Key ke learning_objectives |
+| is_achieved | boolean | True = Tercapai, False = Perlu Peningkatan |
+| created_at | timestamp | Waktu data dibuat |
+
+**Cara Kerja:**
+1. Guru input nilai siswa (misal: 75)
+2. Guru pilih 2-3 TP yang relevan
+3. Guru centang TP mana yang tercapai (biasanya nilai ≥80 = semua tercapai)
+4. Sistem generate deskripsi:
+   - TP yang `is_achieved = true` → "Mencapai kompetensi dengan sangat baik dalam hal..."
+   - TP yang `is_achieved = false` → "Perlu peningkatan dalam hal..."
+
+---
+
+### 3️⃣ **EKSTRAKURIKULER**
+
+#### **Table: extracurriculars**
+Master data ekstrakurikuler.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary Key |
+| school_id | uuid | Foreign Key ke schools |
+| name | string | Nama ekskul (misal: Pramuka, Futsal) |
+| teacher_id | uuid | Foreign Key ke users (pembina ekskul) |
+| description | text | Deskripsi ekskul |
+| created_at | timestamp | Waktu data dibuat |
+
+---
+
+#### **Table: student_extracurriculars**
+Siswa ikut ekskul apa + nilainya.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary Key |
+| student_id | uuid | Foreign Key ke students |
+| extracurricular_id | uuid | Foreign Key ke extracurriculars |
+| academic_year_id | uuid | Foreign Key ke academic_years |
+| semester | integer | 1 atau 2 |
+| predicate | enum | 'Sangat Baik', 'Baik', 'Cukup' |
+| description | text | Deskripsi capaian |
+| created_at | timestamp | Waktu data dibuat |
+
+**Notes:**
+- Siswa bisa ikut lebih dari 1 ekskul
+- Predikat: Sangat Baik / Baik / Cukup (sesuai rapor)
+
+---
+
+### 4️⃣ **KEHADIRAN & RAPOR**
+
+#### **Table: attendances**
+Data kehadiran siswa per semester.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary Key |
+| student_id | uuid | Foreign Key ke students |
+| academic_year_id | uuid | Foreign Key ke academic_years |
+| semester | integer | 1 atau 2 |
+| sakit | integer | Jumlah hari sakit |
+| izin | integer | Jumlah hari izin |
+| alpha | integer | Jumlah hari tanpa keterangan |
+| created_at | timestamp | Waktu data dibuat |
+
+---
+
+#### **Table: report_cards**
+Data rapor final (untuk tracking & status).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | uuid | Primary Key |
+| student_id | uuid | Foreign Key ke students |
+| class_id | uuid | Foreign Key ke classes |
+| academic_year_id | uuid | Foreign Key ke academic_years |
+| semester | integer | 1 atau 2 |
+| teacher_notes | text | Catatan wali kelas |
+| issue_date | date | Tanggal penerbitan rapor |
+| status | enum | 'draft', 'published' |
+| created_at | timestamp | Waktu data dibuat |
+
+**Status:**
+- **draft**: Rapor belum final, masih bisa diedit
+- **published**: Rapor sudah final, tidak bisa diedit
+
+**Notes:**
+- Data nilai ada di `student_scores`
+- Table ini hanya untuk metadata & status rapor
+
+---
+
+## 🔐 Authentication & Authorization
+
+### Login Flow:
+1. User login dengan email & password
+2. Sistem cek role user (admin/guru/wali_kelas)
+3. Sistem load data sesuai `school_id`
+4. User hanya bisa akses data sekolahnya sendiri
+
+### Permission:
+| Role | Create Data | Edit Data | Delete Data | Cetak Rapor | Manage Users |
+|------|-------------|-----------|-------------|-------------|--------------|
+| Admin | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Guru | Nilai saja | Nilai saja | ❌ | ❌ | ❌ |
+| Wali Kelas | Nilai + Ekskul + Kehadiran | Nilai + Ekskul + Kehadiran | ❌ | ✅ | ❌ |
+
+---
+
+## 📊 Business Logic
+
+### 1. Input Nilai (Guru/Wali Kelas)
+**Flow:**
+1. Pilih kelas & mapel yang diampu
+2. Pilih semester (1 atau 2)
+3. Sistem load daftar siswa di kelas tersebut
+4. Sistem load TP yang tersedia untuk mapel + grade + semester
+5. Untuk setiap siswa:
+   - Input nilai akhir (0-100)
+   - Pilih 2-3 TP yang relevan
+   - Centang TP yang tercapai (biasanya nilai ≥80)
+6. Simpan data
+7. Sistem auto-generate deskripsi
+
+**Auto-Generate Deskripsi:**
+```
+Template:
+"Mencapai kompetensi dengan sangat baik dalam hal [TP yang tercapai].
+Perlu peningkatan dalam hal [TP yang tidak tercapai]."
+
+Contoh Output:
+"Mencapai kompetensi dengan sangat baik dalam hal memahami dan 
+menyelesaikan masalah bilangan berpangkat dan bentuk akar.
+Perlu peningkatan dalam hal menentukan dan menyelesaikan masalah 
+yang berkaitan dengan teorema pythagoras."
+```
+
+---
+
+### 2. Input Ekskul (Wali Kelas)
+**Flow:**
+1. Pilih kelas & semester
+2. Untuk setiap siswa:
+   - Pilih ekskul yang diikuti
+   - Pilih predikat (Sangat Baik/Baik/Cukup)
+   - Tulis deskripsi singkat
+3. Simpan data
+
+---
+
+### 3. Input Kehadiran (Wali Kelas)
+**Flow:**
+1. Pilih kelas & semester
+2. Untuk setiap siswa:
+   - Input jumlah hari sakit
+   - Input jumlah hari izin
+   - Input jumlah hari alpha
+3. Simpan data
+
+---
+
+### 4. Cetak Rapor (Wali Kelas)
+**Flow:**
+1. Pilih kelas & semester
+2. Sistem validasi:
+   - ✅ Semua nilai sudah diinput?
+   - ✅ Ekskul sudah diinput?
+   - ✅ Kehadiran sudah diinput?
+   - ✅ Catatan wali kelas sudah diisi?
+3. Generate PDF rapor per siswa
+4. Update status rapor jadi 'published'
+
+**Format PDF:**
+- Header: Data sekolah + siswa
+- Tabel nilai: No, Mata Pelajaran, Nilai Akhir, Capaian Kompetensi
+- Ekstrakurikuler: Nama ekskul + Predikat + Deskripsi
+- Kehadiran: Sakit, Izin, Alpha
+- Catatan wali kelas
+- TTD: Orang tua, Wali Kelas, Kepala Sekolah
+
+---
+
+## 🚀 Fitur Prioritas (MVP)
+
+### Phase 1: Core Features
+- ✅ Login & Authentication
+- ✅ Dashboard (Rekap data)
+- ✅ Management Data Master (Siswa, Guru, Kelas, Mapel)
+- ✅ Management TP (Tujuan Pembelajaran)
+- ✅ Input Nilai + Checklist TP
+- ✅ Input Ekskul
+- ✅ Input Kehadiran
+- ✅ Cetak Rapor (PDF)
+
+### Phase 2: Advanced Features
+- Import/Export Excel (Siswa, TP, Nilai)
+- Multi-tahun ajaran (history rapor)
+- Dashboard analytics (grafik nilai, kehadiran)
+- Notifikasi (reminder input nilai)
+- Backup & restore data
+
+### Phase 3: Optional Features
+- Parent access (orang tua bisa login & liat rapor anak)
+- Mobile app
+- API untuk integrasi sistem lain
+
+---
+
+## 🎨 Tech Stack Recommendation
+
+**Frontend:**
+- React + TypeScript
+- TailwindCSS
+- Shadcn/ui components
+- React Router
+- React Query (data fetching)
+
+**Backend:**
+- Supabase (PostgreSQL + Auth + Storage)
+- Row Level Security (RLS) untuk data isolation
+
+**PDF Generation:**
+- jsPDF atau Puppeteer
+
+**Deployment:**
+- Vercel (Frontend)
+- Supabase Cloud (Backend)
+
+---
+
+## 📝 Notes & Best Practices
+
+1. **Data Isolation**: Semua query harus filter by `school_id`
+2. **Soft Delete**: Jangan delete data, pakai flag `is_active = false`
+3. **Audit Trail**: Simpan `created_at` & `updated_at` di semua table
+4. **Validation**: Nilai harus 0-100, semester harus 1 atau 2
+5. **Backup**: Schedule backup database setiap hari
+6. **Performance**: Index di kolom yang sering di-query (school_id, class_id, dll)
+
+---
+
+## 🔄 Sample Data Flow
+
+**Setup Awal (Admin):**
+```
+1. Create school
+2. Create academic year (2024/2025)
+3. Create users (8 guru)
+4. Create classes (6 kelas: 1, 2, 3, 4, 5, 6)
+5. Create subjects (10 mapel)
+6. Create students (input per kelas)
+7. Assign teacher_subjects:
+   - Guru Kelas 1 → 5 mapel di Kelas 1
+   - Guru Kelas 2 → 5 mapel di Kelas 2
+   - Guru Kelas 3 → 7 mapel di Kelas 3
+   - dst...
+   - Guru PJOK → PJOK di semua kelas
+   - Guru PABP → PABP di semua kelas
+8. Create/Import learning_objectives (TP)
+```
+
+**Semester Berjalan (Guru):**
+```
+1. Login sebagai guru
+2. Lihat mapel & kelas yang diampu
+3. Input nilai siswa:
+   - Pilih mapel: Matematika
+   - Pilih kelas: 5A
+   - Pilih semester: 1
+   - Untuk setiap siswa:
+     * Input nilai: 85
+     * Pilih TP: TP.1, TP.2, TP.3
+     * Centang TP tercapai: TP.1, TP.2 (TP.3 tidak dicentang)
+   - Simpan
+```
+
+**Akhir Semester (Wali Kelas):**
+```
+1. Login sebagai wali kelas
+2. Input ekskul untuk semua siswa
+3. Input kehadiran untuk semua siswa
+4. Tulis catatan wali kelas
+5. Cetak rapor (PDF) untuk semua siswa
+6. Publish rapor
+```
+
+---
+
+**END OF DOCUMENTATION**
+
+*Dokumentasi ini akan terus diupdate seiring perkembangan aplikasi.*

@@ -1,0 +1,6 @@
+id,school_id,name,teacher_id,description,created_at
+3f768548-da48-4647-b1af-cb16c6ddd06d,efe23973-c473-4535-a6d8-77ecb1ee53a8,Tahfidz,,Menghafal Al-Quran,2025-11-07 19:42:04.987243+00
+6eed8b35-c6eb-4949-a3e2-8971a582fd9c,efe23973-c473-4535-a6d8-77ecb1ee53a8,Pramuka,,Kepramukaan wajib untuk kelas 3-6,2025-11-07 19:42:04.987243+00
+a39c717c-d5c8-41e0-80d1-c7bd41f87c37,efe23973-c473-4535-a6d8-77ecb1ee53a8,Seni Musik,,Angklung dan gamelan,2025-11-07 19:42:04.987243+00
+ed296158-de25-4045-86f1-884faf11eae5,efe23973-c473-4535-a6d8-77ecb1ee53a8,Seni Tari,,Tari tradisional Sunda,2025-11-07 19:42:04.987243+00
+f282a1c2-c736-44e6-9bd8-aba963f24bde,efe23973-c473-4535-a6d8-77ecb1ee53a8,Futsal,,Olahraga futsal,2025-11-07 19:42:04.987243+00

@@ -1,0 +1,242 @@
+Akun Supabase : sdnpasirpogor89@gmail.com
+
+Nama Project : e-raport 
+Password Projet : @eraport#
+
+URL : https://greguvbgzigjkbddguor.supabase.co
+API KEY : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdyZWd1dmJnemlnamtiZGRndW9yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI0NzUyNjUsImV4cCI6MjA3ODA1MTI2NX0.AMjLSWcKCWTryVWzZZC8dbX-1WeIcfMrxM5fQXSStJo
+
+TABEL PADA SUPABASE :
+academic_years : id, school_id, name, start_date, end_date, is_active, created_at, updated_at
+attendances : id, student_id, academic_year_id, semester, sakit, izin, alpha, created_at
+classes : id, school_id, academic_year_id, name, grade, fase, wali_kelas_id, capacity, created_at
+extracurriculars : id, school_id, name, teacher_id, description, created_at
+learning_objectives : id, subject_id, grade, fase, semester, code, description, sort_order, created_at
+report_cards : id, student_id, class_id, academic_year_id, semester, teacher_notes, issue_date, status, created_at
+schools : id, name, npsn, address, principal_name, principal_nip, phone, email, logo_url, created_at, updated_at
+student_extracurriculars : id, student_id, extracurricular_id, academic_year_id, semester, predicate, description, created_at
+student_scores : id, student_id, teacher_subject_id, academic_year_id, semester, final_score, description, created_at, updated_at
+student_tp_achievements : id, student_score_id, learning_objective_id, is_achieved, created_at
+students : id, school_id, class_id, nisn, nis, name, gender, birth_place, birth_date, address, parent_name, parent_phone, is_active, created_at
+subjects : id, school_id, code, name, category, sort_order, created_at
+teacher_subjects : id, teacher_id, subject_id, class_id, academic_year_id, created_at
+users : id, school_id, username, password_hash, name, nip, role, phone, is_active, created_at, updated_at
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- WARNING: This schema is for context only and is not meant to be run.
+-- Table order and constraints may not be valid for execution.
+
+CREATE TABLE public.academic_years (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  school_id uuid NOT NULL,
+  name character varying NOT NULL,
+  start_date date NOT NULL,
+  end_date date NOT NULL,
+  is_active boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT academic_years_pkey PRIMARY KEY (id),
+  CONSTRAINT academic_years_school_id_fkey FOREIGN KEY (school_id) REFERENCES public.schools(id)
+);
+CREATE TABLE public.attendances (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  student_id uuid NOT NULL,
+  academic_year_id uuid NOT NULL,
+  semester integer NOT NULL CHECK (semester = ANY (ARRAY[1, 2])),
+  sakit integer DEFAULT 0 CHECK (sakit >= 0),
+  izin integer DEFAULT 0 CHECK (izin >= 0),
+  alpha integer DEFAULT 0 CHECK (alpha >= 0),
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT attendances_pkey PRIMARY KEY (id),
+  CONSTRAINT attendances_student_id_fkey FOREIGN KEY (student_id) REFERENCES public.students(id),
+  CONSTRAINT attendances_academic_year_id_fkey FOREIGN KEY (academic_year_id) REFERENCES public.academic_years(id)
+);
+CREATE TABLE public.classes (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  school_id uuid NOT NULL,
+  academic_year_id uuid NOT NULL,
+  name character varying NOT NULL,
+  grade integer NOT NULL CHECK (grade >= 1 AND grade <= 6),
+  fase character varying NOT NULL CHECK (fase::text = ANY (ARRAY['A'::character varying, 'B'::character varying, 'C'::character varying]::text[])),
+  wali_kelas_id uuid NOT NULL,
+  capacity integer,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT classes_pkey PRIMARY KEY (id),
+  CONSTRAINT classes_school_id_fkey FOREIGN KEY (school_id) REFERENCES public.schools(id),
+  CONSTRAINT classes_academic_year_id_fkey FOREIGN KEY (academic_year_id) REFERENCES public.academic_years(id),
+  CONSTRAINT classes_wali_kelas_id_fkey FOREIGN KEY (wali_kelas_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.extracurriculars (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  school_id uuid NOT NULL,
+  name character varying NOT NULL,
+  teacher_id uuid,
+  description text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT extracurriculars_pkey PRIMARY KEY (id),
+  CONSTRAINT extracurriculars_school_id_fkey FOREIGN KEY (school_id) REFERENCES public.schools(id),
+  CONSTRAINT extracurriculars_teacher_id_fkey FOREIGN KEY (teacher_id) REFERENCES public.users(id)
+);
+CREATE TABLE public.learning_objectives (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  subject_id uuid NOT NULL,
+  grade integer NOT NULL CHECK (grade >= 1 AND grade <= 6),
+  fase character varying NOT NULL CHECK (fase::text = ANY (ARRAY['A'::character varying, 'B'::character varying, 'C'::character varying]::text[])),
+  semester integer NOT NULL CHECK (semester = ANY (ARRAY[1, 2])),
+  code character varying NOT NULL,
+  description text NOT NULL,
+  sort_order integer NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT learning_objectives_pkey PRIMARY KEY (id),
+  CONSTRAINT learning_objectives_subject_id_fkey FOREIGN KEY (subject_id) REFERENCES public.subjects(id)
+);
+CREATE TABLE public.report_cards (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  student_id uuid NOT NULL,
+  class_id uuid NOT NULL,
+  academic_year_id uuid NOT NULL,
+  semester integer NOT NULL CHECK (semester = ANY (ARRAY[1, 2])),
+  teacher_notes text,
+  issue_date date,
+  status character varying DEFAULT 'draft'::character varying CHECK (status::text = ANY (ARRAY['draft'::character varying, 'published'::character varying]::text[])),
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT report_cards_pkey PRIMARY KEY (id),
+  CONSTRAINT report_cards_student_id_fkey FOREIGN KEY (student_id) REFERENCES public.students(id),
+  CONSTRAINT report_cards_class_id_fkey FOREIGN KEY (class_id) REFERENCES public.classes(id),
+  CONSTRAINT report_cards_academic_year_id_fkey FOREIGN KEY (academic_year_id) REFERENCES public.academic_years(id)
+);
+CREATE TABLE public.schools (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  name character varying NOT NULL,
+  npsn character varying UNIQUE,
+  address text,
+  principal_name character varying,
+  principal_nip character varying,
+  phone character varying,
+  email character varying,
+  logo_url text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT schools_pkey PRIMARY KEY (id)
+);
+CREATE TABLE public.student_extracurriculars (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  student_id uuid NOT NULL,
+  extracurricular_id uuid NOT NULL,
+  academic_year_id uuid NOT NULL,
+  semester integer NOT NULL CHECK (semester = ANY (ARRAY[1, 2])),
+  predicate character varying CHECK (predicate::text = ANY (ARRAY['Sangat Baik'::character varying, 'Baik'::character varying, 'Cukup'::character varying]::text[])),
+  description text,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT student_extracurriculars_pkey PRIMARY KEY (id),
+  CONSTRAINT student_extracurriculars_student_id_fkey FOREIGN KEY (student_id) REFERENCES public.students(id),
+  CONSTRAINT student_extracurriculars_extracurricular_id_fkey FOREIGN KEY (extracurricular_id) REFERENCES public.extracurriculars(id),
+  CONSTRAINT student_extracurriculars_academic_year_id_fkey FOREIGN KEY (academic_year_id) REFERENCES public.academic_years(id)
+);
+CREATE TABLE public.student_scores (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  student_id uuid NOT NULL,
+  teacher_subject_id uuid NOT NULL,
+  academic_year_id uuid NOT NULL,
+  semester integer NOT NULL CHECK (semester = ANY (ARRAY[1, 2])),
+  final_score numeric CHECK (final_score >= 0::numeric AND final_score <= 100::numeric),
+  description text,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT student_scores_pkey PRIMARY KEY (id),
+  CONSTRAINT student_scores_student_id_fkey FOREIGN KEY (student_id) REFERENCES public.students(id),
+  CONSTRAINT student_scores_teacher_subject_id_fkey FOREIGN KEY (teacher_subject_id) REFERENCES public.teacher_subjects(id),
+  CONSTRAINT student_scores_academic_year_id_fkey FOREIGN KEY (academic_year_id) REFERENCES public.academic_years(id)
+);
+CREATE TABLE public.student_tp_achievements (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  student_score_id uuid NOT NULL,
+  learning_objective_id uuid NOT NULL,
+  is_achieved boolean NOT NULL DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT student_tp_achievements_pkey PRIMARY KEY (id),
+  CONSTRAINT student_tp_achievements_student_score_id_fkey FOREIGN KEY (student_score_id) REFERENCES public.student_scores(id),
+  CONSTRAINT student_tp_achievements_learning_objective_id_fkey FOREIGN KEY (learning_objective_id) REFERENCES public.learning_objectives(id)
+);
+CREATE TABLE public.students (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  school_id uuid NOT NULL,
+  class_id uuid NOT NULL,
+  nisn character varying NOT NULL UNIQUE,
+  nis character varying NOT NULL,
+  name character varying NOT NULL,
+  gender character varying NOT NULL CHECK (gender::text = ANY (ARRAY['L'::character varying, 'P'::character varying]::text[])),
+  birth_place character varying NOT NULL,
+  birth_date date NOT NULL,
+  address text NOT NULL,
+  parent_name character varying NOT NULL,
+  parent_phone character varying,
+  is_active boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT students_pkey PRIMARY KEY (id),
+  CONSTRAINT students_school_id_fkey FOREIGN KEY (school_id) REFERENCES public.schools(id),
+  CONSTRAINT students_class_id_fkey FOREIGN KEY (class_id) REFERENCES public.classes(id)
+);
+CREATE TABLE public.subjects (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  school_id uuid NOT NULL,
+  code character varying NOT NULL,
+  name character varying NOT NULL,
+  category character varying NOT NULL CHECK (category::text = ANY (ARRAY['intrakurikuler'::character varying, 'muatan_lokal'::character varying]::text[])),
+  sort_order integer NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT subjects_pkey PRIMARY KEY (id),
+  CONSTRAINT subjects_school_id_fkey FOREIGN KEY (school_id) REFERENCES public.schools(id)
+);
+CREATE TABLE public.teacher_subjects (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  teacher_id uuid NOT NULL,
+  subject_id uuid NOT NULL,
+  class_id uuid NOT NULL,
+  academic_year_id uuid NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT teacher_subjects_pkey PRIMARY KEY (id),
+  CONSTRAINT teacher_subjects_teacher_id_fkey FOREIGN KEY (teacher_id) REFERENCES public.users(id),
+  CONSTRAINT teacher_subjects_subject_id_fkey FOREIGN KEY (subject_id) REFERENCES public.subjects(id),
+  CONSTRAINT teacher_subjects_class_id_fkey FOREIGN KEY (class_id) REFERENCES public.classes(id),
+  CONSTRAINT teacher_subjects_academic_year_id_fkey FOREIGN KEY (academic_year_id) REFERENCES public.academic_years(id)
+);
+CREATE TABLE public.users (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  school_id uuid NOT NULL,
+  username character varying NOT NULL UNIQUE,
+  password_hash text NOT NULL,
+  name character varying NOT NULL,
+  nip character varying,
+  role character varying NOT NULL CHECK (role::text = ANY (ARRAY['admin'::character varying, 'guru'::character varying, 'wali_kelas'::character varying]::text[])),
+  phone character varying,
+  is_active boolean DEFAULT true,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT users_pkey PRIMARY KEY (id),
+  CONSTRAINT users_school_id_fkey FOREIGN KEY (school_id) REFERENCES public.schools(id)
+);

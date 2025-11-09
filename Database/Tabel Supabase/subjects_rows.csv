@@ -1,0 +1,10 @@
+id,school_id,code,name,category,sort_order,created_at
+096cf375-23d3-457d-be00-cfd7f41696ad,efe23973-c473-4535-a6d8-77ecb1ee53a8,BI,Bahasa Indonesia,intrakurikuler,1,2025-11-07 02:23:40.931028+00
+134d705a-67af-4439-9f23-a9abd1516394,efe23973-c473-4535-a6d8-77ecb1ee53a8,PJOK,Pendidikan Jasmani Olahraga Kesehatan,intrakurikuler,9,2025-11-07 02:23:40.931028+00
+3046fc9e-dad9-46df-8d85-ffb5b97881bd,efe23973-c473-4535-a6d8-77ecb1ee53a8,PP,Pendidikan Pancasila,intrakurikuler,6,2025-11-07 02:23:40.931028+00
+3b220060-8a94-4622-b2d4-e512a44416b7,efe23973-c473-4535-a6d8-77ecb1ee53a8,MTK,Matematika,intrakurikuler,4,2025-11-07 02:23:40.931028+00
+46e6a11e-f9d1-414f-bc23-1fd4adb67a41,efe23973-c473-4535-a6d8-77ecb1ee53a8,SB,Seni Budaya,intrakurikuler,7,2025-11-07 02:23:40.931028+00
+8b356568-c496-4286-8da8-1d7c793ea743,efe23973-c473-4535-a6d8-77ecb1ee53a8,BS,Bahasa Sunda,muatan_lokal,3,2025-11-07 02:23:40.931028+00
+b33bff01-dc7f-4587-a4c1-78627b8a82a9,efe23973-c473-4535-a6d8-77ecb1ee53a8,BING,Bahasa Inggris,intrakurikuler,2,2025-11-07 02:23:40.931028+00
+b73d87c6-0e07-4c91-9226-e7c54a697908,efe23973-c473-4535-a6d8-77ecb1ee53a8,IPAS,IPAS,intrakurikuler,5,2025-11-07 02:23:40.931028+00
+efbca0e3-de6a-4edc-982f-c118e5fe751c,efe23973-c473-4535-a6d8-77ecb1ee53a8,PABP,Pendidikan Agama dan Budi Pekerti,intrakurikuler,8,2025-11-07 02:23:40.931028+00
